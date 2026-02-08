@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#F6F3EE">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PSAT">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="PSAT 문제 풀이 연습">
+    
+    <!-- iOS 아이콘 -->
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    
+    <title>PSAT 연습장</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ========== 대시보드 ========== -->
+<div id="screen-dashboard" class="screen active">
+    <header class="header">
+        <div class="header-left">
+            <div>
+                <div class="header-title">PSAT</div>
+                <div class="header-sub">매일 조금씩</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="d-day" id="d-day">D-00</div>
+            <button class="settings-btn" onclick="App.showScreen('settings')">⚙️</button>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <!-- 인사 카드 -->
+        <div class="greeting-card">
+            <div class="greeting-name">오늘도 화이팅 💪</div>
+            <div class="greeting-msg">꾸준히 풀면 반드시 결과가 따라옵니다</div>
+        </div>
+
+        <!-- 핵심 통계 칩 -->
+        <div class="stats-row">
+            <div class="stat-chip">
+                <div class="icon blue">📊</div>
+                <div class="info">
+                    <div class="value blue" id="stat-total">0</div>
+                    <div class="label">총 <span id="stat-total-questions">0</span>문제 중</div>
+                </div>
+            </div>
+            <div class="stat-chip">
+                <div class="icon green">🎯</div>
+                <div class="info">
+                    <div class="value green" id="stat-accuracy">0%</div>
+                    <div class="label">정답률</div>
+                </div>
+            </div>
+            <div class="stat-chip">
+                <div class="icon orange">📅</div>
+                <div class="info">
+                    <div class="value orange" id="stat-today">0</div>
+                    <div class="label">오늘 풀이</div>
+                </div>
+            </div>
+            <div class="stat-chip">
+                <div class="icon red">⚠️</div>
+                <div class="info">
+                    <div class="value red" id="stat-weak">0</div>
+                    <div class="label">약점 문제</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 유형별 학습 영역 — 완전 분리 -->
+        <div class="mode-section-title">유형 선택</div>
+        <div class="mode-cards">
+            <!-- 수리 / 논리 -->
+            <div class="mode-card math" onclick="App.startStudy('math')">
+                <div>
+                    <div class="mode-icon">🔢</div>
+                    <div class="mode-title">수리 · 논리</div>
+                    <div class="mode-desc">자료해석, 수리추론, 경우의 수</div>
+                </div>
+                <div class="mode-count" id="math-count">0문제</div>
+            </div>
+            <!-- 독해 / 요약 -->
+            <div class="mode-card reading" onclick="App.startStudy('lang')">
+                <div>
+                    <div class="mode-icon">📖</div>
+                    <div class="mode-title">독해 · 요약</div>
+                    <div class="mode-desc">언어논리, 비판적 사고, 독해</div>
+                </div>
+                <div class="mode-count" id="lang-count">0문제</div>
+            </div>
+        </div>
+
+        <!-- 퀵 액션 -->
+        <div class="mode-section-title">빠른 학습</div>
+        <div class="quick-actions">
+            <div class="quick-btn primary" onclick="App.startStudy('random')">
+                <div class="q-icon">📝</div>
+                <div class="q-text">
+                    <div class="q-title">랜덤 풀기</div>
+                    <div class="q-sub">전체 영역 섞기</div>
+                </div>
+            </div>
+            <div class="quick-btn" onclick="App.startStudy('weakness')">
+                <div class="q-icon">🎯</div>
+                <div class="q-text">
+                    <div class="q-title">약점 보완</div>
+                    <div class="q-sub" id="weakness-count">0문제</div>
+                </div>
+            </div>
+            <div class="quick-btn" onclick="App.showScreen('ai-generate')">
+                <div class="q-icon">🤖</div>
+                <div class="q-text">
+                    <div class="q-title">AI 문제</div>
+                    <div class="q-sub">틀린 유형 연습</div>
+                </div>
+            </div>
+            <div class="quick-btn" onclick="App.showScreen('review')">
+                <div class="q-icon">⭐</div>
+                <div class="q-text">
+                    <div class="q-title">복습 관리</div>
+                    <div class="q-sub" id="starred-count">0문제</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 영역별 분석 -->
+        <div class="analysis-card">
+            <div class="analysis-title">📈 영역별 정답률</div>
+            <div class="area-row">
+                <div class="area-name">수리·논리</div>
+                <div class="area-bar">
+                    <div class="area-fill math" id="math-fill" style="width: 50%">50%</div>
+                </div>
+                <div class="area-stats" id="math-stats">0/0</div>
+            </div>
+            <div class="area-row">
+                <div class="area-name">독해·요약</div>
+                <div class="area-bar">
+                    <div class="area-fill lang" id="lang-fill" style="width: 50%">50%</div>
+                </div>
+                <div class="area-stats" id="lang-stats">0/0</div>
+            </div>
+        </div>
+
+        <!-- 문제 목록 바로가기 -->
+        <div class="quick-actions" style="grid-template-columns:1fr">
+            <div class="quick-btn" onclick="App.showScreen('archive')">
+                <div class="q-icon">📚</div>
+                <div class="q-text">
+                    <div class="q-title">전체 문제 목록</div>
+                    <div class="q-sub" id="archive-count">0문제</div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ========== 학습 화면 ========== -->
+<div id="screen-study" class="screen">
+    <header class="study-header">
+        <button class="back-btn" onclick="App.exitStudy()">✕</button>
+        <div class="timer-display" id="study-timer">00:00</div>
+        <div class="progress-display">
+            <span id="q-current">1</span> / <span id="q-total">25</span>
+        </div>
+    </header>
+
+    <main class="exam-paper" id="paper-viewport">
+        <!-- 문제가 여기에 렌더링 -->
+    </main>
+
+    <nav class="nav-bar">
+        <button class="nav-btn" onclick="App.reportQuestion()">⚠️</button>
+        <button class="nav-btn" onclick="App.prevQuestion()">◀ 이전</button>
+        <button class="nav-btn primary" onclick="App.nextQuestion()">다음 ▶</button>
+    </nav>
+</div>
+
+<!-- ========== AI 생성 화면 ========== -->
+<div id="screen-ai-generate" class="screen">
+    <header class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="App.showScreen('dashboard')">←</button>
+            <div class="header-title">AI 문제 생성</div>
+        </div>
+    </header>
+
+    <main class="form-container">
+        <div class="form-card" id="ai-form">
+            <div class="form-title">
+                <div class="icon">🤖</div>
+                <h2>AI 문제 만들기</h2>
+                <p>틀린 문제와 비슷한 유형으로 연습해요</p>
+            </div>
+
+            <div class="form-group">
+                <label>영역</label>
+                <select id="ai-category">
+                    <option value="MATH">🔢 수리 · 논리</option>
+                    <option value="LANG">📖 독해 · 요약</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>생성 방식</label>
+                <select id="ai-mode">
+                    <option value="similar">🎯 틀린 문제 기반</option>
+                    <option value="new">✨ 새 문제</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>난이도 (새 문제용)</label>
+                <select id="ai-level">
+                    <option value="1">쉬움</option>
+                    <option value="2" selected>보통</option>
+                    <option value="3">어려움</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>개수</label>
+                <select id="ai-count">
+                    <option value="3">3문제</option>
+                    <option value="5" selected>5문제</option>
+                    <option value="10">10문제</option>
+                </select>
+            </div>
+
+            <button class="submit-btn" onclick="App.generateAI()">
+                문제 만들기
+            </button>
+        </div>
+
+        <div class="loading-state" id="ai-loading">
+            <div class="spinner"></div>
+            <p id="loading-text">AI가 문제를 생성 중...</p>
+        </div>
+    </main>
+</div>
+
+<!-- ========== 복습 관리 화면 ========== -->
+<div id="screen-review" class="screen">
+    <header class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="App.showScreen('dashboard')">←</button>
+            <div class="header-title">복습 관리</div>
+        </div>
+    </header>
+
+    <div class="tab-bar">
+        <div class="tab active" data-tab="starred" onclick="App.switchReviewTab('starred')">⭐ 중요</div>
+        <div class="tab" data-tab="wrong" onclick="App.switchReviewTab('wrong')">❌ 오답</div>
+        <div class="tab" data-tab="all" onclick="App.switchReviewTab('all')">📋 전체</div>
+    </div>
+
+    <main class="review-list" id="review-list">
+        <!-- JS로 렌더링 -->
+    </main>
+</div>
+
+<!-- ========== 문제 아카이브 화면 ========== -->
+<div id="screen-archive" class="screen">
+    <header class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="App.showScreen('dashboard')">←</button>
+            <div class="header-title">문제 목록</div>
+        </div>
+    </header>
+
+    <div class="filter-bar">
+        <select id="archive-category" onchange="App.renderArchive()">
+            <option value="all">전체</option>
+            <option value="MATH">🔢 수리·논리</option>
+            <option value="LANG">📖 독해·요약</option>
+        </select>
+        <select id="archive-level" onchange="App.renderArchive()">
+            <option value="all">전체 난이도</option>
+            <option value="1">쉬움</option>
+            <option value="2">보통</option>
+            <option value="3">어려움</option>
+        </select>
+        <select id="archive-status" onchange="App.renderArchive()">
+            <option value="all">전체 상태</option>
+            <option value="unsolved">안 푼 문제</option>
+            <option value="wrong">틀린 문제</option>
+            <option value="correct">맞힌 문제</option>
+        </select>
+    </div>
+
+    <div class="archive-stats">
+        <span id="archive-filtered">0</span>문제 표시 중
+    </div>
+
+    <main class="archive-list" id="archive-list">
+        <!-- JS로 렌더링 -->
+    </main>
+</div>
+
+<!-- ========== 결과 화면 ========== -->
+<div id="screen-result" class="screen">
+    <main class="result-container">
+        <div class="result-card">
+            <div class="result-score" id="result-score">0%</div>
+            <div class="result-label">정답률</div>
+
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="stat-value green" id="result-correct">0</div>
+                    <div class="stat-label">정답</div>
+                </div>
+                <div class="result-stat">
+                    <div class="stat-value red" id="result-wrong">0</div>
+                    <div class="stat-label">오답</div>
+                </div>
+                <div class="result-stat">
+                    <div class="stat-value" id="result-time">0:00</div>
+                    <div class="stat-label">소요시간</div>
+                </div>
+            </div>
+
+            <div class="result-actions">
+                <button class="action-btn primary full" onclick="App.reviewWrong()">
+                    ❌ 오답 복습하기
+                </button>
+                <button class="action-btn full" onclick="App.showScreen('dashboard')">
+                    🏠 대시보드로
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ========== 설정 화면 ========== -->
+<div id="screen-settings" class="screen">
+    <header class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="App.showScreen('dashboard')">←</button>
+            <div class="header-title">설정</div>
+        </div>
+    </header>
+
+    <main class="settings-container">
+        <div class="settings-group">
+            <h3>🤖 AI 설정</h3>
+            <div class="setting-item">
+                <label>Claude API 키</label>
+                <input type="password" id="setting-api-key" placeholder="sk-ant-..." style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-warm);color:var(--text-primary);font-size:13px;margin-top:6px;font-family:var(--font-mono);">
+            </div>
+            <div class="setting-item">
+                <label>모델</label>
+                <select id="setting-model">
+                    <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                    <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+                </select>
+            </div>
+            <button class="setting-btn primary" onclick="App.saveApiSettings()">
+                🔑 API 설정 저장
+            </button>
+            <button class="setting-btn" onclick="App.testApiKey()">
+                🧪 API 연결 테스트
+            </button>
+        </div>
+
+        <div class="settings-group">
+            <h3>📝 학습 설정</h3>
+            <div class="setting-item">
+                <label>문제 수</label>
+                <select id="setting-count">
+                    <option value="10">10문제</option>
+                    <option value="20">20문제</option>
+                    <option value="25">25문제</option>
+                    <option value="40">40문제</option>
+                    <option value="50">50문제</option>
+                    <option value="100">전체</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>제한 시간</label>
+                <select id="setting-time">
+                    <option value="30">30분</option>
+                    <option value="60">60분</option>
+                    <option value="90">90분</option>
+                    <option value="120">120분</option>
+                </select>
+            </div>
+            <button class="setting-btn primary" onclick="App.saveSettings()">
+                💾 설정 저장
+            </button>
+        </div>
+
+        <div class="settings-group">
+            <h3>📋 이의제기 관리</h3>
+            <div class="setting-item">
+                <label>누적 이의제기</label>
+                <span id="report-count" style="font-weight:600;font-family:var(--font-mono);">0건</span>
+            </div>
+            <button class="setting-btn" onclick="App.showReports()">
+                📋 이의제기 목록 보기
+            </button>
+            <button class="setting-btn primary" onclick="App.submitReportsToAI()">
+                🤖 AI에게 분석 요청
+            </button>
+            <button class="setting-btn danger" onclick="App.clearReports()">
+                🗑 이의제기 초기화
+            </button>
+        </div>
+
+        <div class="settings-group">
+            <h3>💾 데이터 관리</h3>
+            <button class="setting-btn danger" onclick="App.resetData()">
+                🗑 모든 데이터 초기화
+            </button>
+            <button class="setting-btn" onclick="App.exportData()">
+                📤 데이터 내보내기
+            </button>
+        </div>
+    </main>
+</div>
+
+<!-- ========== 토스트 ========== -->
+<div class="toast" id="toast"></div>
+
+<!-- ========== 확인 모달 ========== -->
+<div class="modal-overlay" id="modal">
+    <div class="modal-card">
+        <h3 id="modal-title">확인</h3>
+        <p id="modal-message"></p>
+        <div class="modal-actions">
+            <button class="modal-btn" onclick="App.closeModal()">취소</button>
+            <button class="modal-btn primary" id="modal-confirm">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/config.js"></script>
+<script src="js/questions_data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script>
+// PWA Service Worker 등록
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW 등록 완료'))
+            .catch(err => console.log('SW 등록 실패:', err));
+    });
+}
+</script>
+</body>
+</html>
